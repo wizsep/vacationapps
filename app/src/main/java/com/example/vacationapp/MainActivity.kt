@@ -109,7 +109,6 @@ fun MainContent(modifier: Modifier, viewModel: VacationViewModel, navController:
                     .fillMaxWidth()
                     .height(150.dp)
                     .clickable {
-                        // Mostrar foto en pantalla completa
                     }
             )
         }
@@ -118,7 +117,6 @@ fun MainContent(modifier: Modifier, viewModel: VacationViewModel, navController:
 
         Button(onClick = {
             if (permissionsState.allPermissionsGranted) {
-                // Obtener la ubicación simulada
                 locationState.value = GeoPoint(37.7749, -122.4194) // Ejemplo de coordenadas
                 viewModel.addVacationSpot(VacationSpot(name, photos, locationState.value.latitude, locationState.value.longitude))
             } else {
