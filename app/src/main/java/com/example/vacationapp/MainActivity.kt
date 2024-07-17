@@ -11,12 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,21 +23,15 @@ import com.example.vacationapp.viewmodel.VacationSpot
 import com.example.vacationapp.viewmodel.VacationViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-
 import org.osmdroid.util.GeoPoint
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             val viewModel: VacationViewModel = viewModel()
-            NavGraph(viewModel)
+            MyApp(viewModel)
         }
-    }
-
-    private fun viewModel(): VacationViewModel {
-        TODO("Not yet implemented")
     }
 }
 
@@ -53,7 +42,7 @@ fun MyApp(viewModel: VacationViewModel = viewModel()) {
             TopAppBar(title = { Text("Registro de Vacaciones") })
         },
         content = { paddingValues ->
-            MainContent(Modifier.padding(paddingValues), viewModel)
+            MainContent(Modifier.padding(paddingValues), viewModel, navController)
         }
     )
 }
@@ -62,8 +51,6 @@ fun MyApp(viewModel: VacationViewModel = viewModel()) {
 @Composable
 fun MainContent(modifier: Modifier, viewModel: VacationViewModel, navController: NavHostController) {
     val context = LocalContext.current
-    val load = android.content.res.Configuration.getInstance()
-        .load(context, androidx.preference.PreferenceManager.getDefaultSharedPreferences(context))
 
     var name by remember { mutableStateOf("") }
     var photos by remember { mutableStateOf(listOf<String>()) }
@@ -75,6 +62,29 @@ fun MainContent(modifier: Modifier, viewModel: VacationViewModel, navController:
             Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
     )
+
+    if (permissionsState.shouldShowRationale) {
+        AlertDialog(
+            onDismissRequest = { /* Rechazo de solicitud */ },
+            title = { Text("Permisos necesarios") },
+            text = { Text("Para tomar fotos y guardarlas en la galería, se nececita acceso a la cámara y al almacenamiento. Por favor, permita estos permisos para continuar.") },
+            confirmButton = {
+                Button(onClick = { permissionsState.launchMultiplePermissionRequest() }) {
+                    Text("Aceptar")
+                }
+            },
+            dismissButton = {
+                Button(onClick = {  }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    } else if (permissionsState.allPermissionsGranted) {
+    } else {
+        LaunchedEffect(Unit) {
+            permissionsState.launchMultiplePermissionRequest()
+        }
+    }
 
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uriList ->
         photos = uriList.map { it.toString() }
@@ -117,7 +127,7 @@ fun MainContent(modifier: Modifier, viewModel: VacationViewModel, navController:
 
         Button(onClick = {
             if (permissionsState.allPermissionsGranted) {
-                locationState.value = GeoPoint(37.7749, -122.4194) // Ejemplo de coordenadas
+                locationState.value = GeoPoint(37.7749, -122.4194) 
                 viewModel.addVacationSpot(VacationSpot(name, photos, locationState.value.latitude, locationState.value.longitude))
             } else {
                 permissionsState.launchMultiplePermissionRequest()
@@ -135,6 +145,7 @@ fun MainContent(modifier: Modifier, viewModel: VacationViewModel, navController:
         }
     }
 }
+
 
 class ExperimentalPermissionsApi {
 
