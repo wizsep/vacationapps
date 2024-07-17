@@ -21,7 +21,7 @@ fun MapScreen(viewModel: VacationViewModel = viewModel()) {
             setMultiTouchControls(true)
             val mapController = controller
             mapController.setZoom(15)
-            val startPoint = GeoPoint(0.0, 0.0) // Cambiar con la ubicación real
+            val startPoint = GeoPoint(0.0, 0.0) 
             mapController.setCenter(startPoint)
 
             val marker = Marker(this)
